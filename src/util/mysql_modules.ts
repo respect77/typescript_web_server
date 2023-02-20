@@ -74,34 +74,7 @@ export class MySqlModule extends EventEmitter {
             return ErrorReturn(error);
         }
     }
-/*
-    //todo 처리해야함
-    async MultiQueryReturnPromise(query_array: Array<string>) {
-        try {
-            let connection = await this.connect_pool.getConnection();
-            connection.beginTransaction();
-            try {
-                for (var i in query_array) {
-                    await connection.query(query_array[i]);
-                }
 
-                await connection.commit();
-            }
-            catch (error) {
-                await connection.rollback();
-                throw (error);
-            }
-            //todo release가 안될 수 있음
-            connection.release();
-        }
-        catch (error) {
-
-            //return ErrorReturn(error);
-        }
-
-        //return Return();
-    }
-*/
     async ProcedurePromise(procedure: string, params: Array<any>) {
         try {
             const [rows, fields] = await this.connect_pool.query<Array<any>>(procedure, params);

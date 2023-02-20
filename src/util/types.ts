@@ -1,5 +1,6 @@
 
 export interface ServerConfig {
+    port: number;
     game_db: string
 }
 
@@ -9,9 +10,4 @@ export enum Master2WorkerEnum {
 
 export enum Worker2MasterEnum {
     WorkerCreateDone = 1,
-    Hair = 2,
-    Eyebrow = 3,
-    Eye = 4,
-    Mouse = 5,
-    Skin = 6
 }

@@ -14,7 +14,7 @@ export class SelectParam {
         this.projection = {};
     }
 
-    Query(key: string, value: any) {
+    Query(key: string, value: any): SelectParam {
         if (this.query[key] !== undefined) {
             console.log(`this.query["${key}"] !== undefined`);
         }
@@ -26,12 +26,12 @@ export class SelectParam {
         return this.query;
     }
 
-    Select(key: string) {
+    Select(key: string): SelectParam {
         this.projection[key] = 1;
         return this;
     }
 
-    GetProjection() {
+    GetProjection(): any {
         return { projection: this.projection };
     }
 }
@@ -53,7 +53,7 @@ export class UpdateParam {
         this.update_list = new Set<string>;
     }
 
-    Set(key: string, value: any) {
+    Set(key: string, value: any): UpdateParam {
         if (this.update_list.has(key)) {
             console.log(`this.update_list[${key}] !== undefined`);
         }
@@ -67,7 +67,7 @@ export class UpdateParam {
         return this;
     }
 
-    Inc(key: string, value: number = 1) {
+    Inc(key: string, value: number = 1): UpdateParam {
         if (this.update_list.has(key)) {
             console.log(`this.update_list[${key}] !== undefined`);
         }
@@ -81,7 +81,7 @@ export class UpdateParam {
         return this;
     }
 
-    Append(key: string, value: any) {
+    Append(key: string, value: any): UpdateParam {
         if (this.update_list.has(key)) {
             console.log(`this.update_list[${key}] !== undefined`);
         }
@@ -95,7 +95,7 @@ export class UpdateParam {
         return this;
     }
 
-    Remove(key: string) {
+    Remove(key: string): UpdateParam {
         if (this.update_list.has(key)) {
             console.log(`this.update_list[${key}] !== undefined`);
         }
@@ -109,7 +109,7 @@ export class UpdateParam {
         return this;
     }
 
-    Query(key: string, value: any) {
+    Query(key: string, value: any): UpdateParam {
         if (this.query[key] !== undefined) {
             console.log(`this.query["${key}"] !== undefined`);
         }
@@ -117,11 +117,11 @@ export class UpdateParam {
         return this;
     }
 
-    GetQuery(): Map<string, object> {
+    GetQuery(): any {
         return this.query;
     }
 
-    GetUpdate() {
+    GetUpdate(): any {
         let update_map = {} as any;
 
         if (this.update_set.size != 0) {
@@ -154,11 +154,11 @@ export class MongodbModule {
     async Connect(conn_uri: string): Promise<boolean> {
         let mongodb_options = {
         };
-/*
-        mongodb_options = {
-            tlsCAFile: `config/debug/rds-combined-ca-bundle.pem`
-        }
-*/
+        /*
+                mongodb_options = {
+                    tlsCAFile: `config/debug/rds-combined-ca-bundle.pem`
+                }
+        */
         let connect_count = 5;
 
         while (true) {
@@ -189,7 +189,7 @@ export class MongodbModule {
             try {
                 let result = await this.SelectOne(select_param);
             }
-            catch(err) {
+            catch (err) {
                 console.log(err)
             }
         }
@@ -202,7 +202,7 @@ export class MongodbModule {
             try {
                 let result = await this.UpdateOne(update_param);
             }
-            catch(err) {
+            catch (err) {
                 console.log(err)
             }
         }

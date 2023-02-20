@@ -100,8 +100,9 @@ export class WorkerContext {
         self.RequestMapping(app);
         var server = app;
     
-        server.listen(self.config.port, function () {
-            console.log('Start Server port : ' + self.config.port);
+        const port = self.config.port|80
+        server.listen(port, function () {
+            console.log(`Start Server port : ${port}`);
         });
         return;
     
@@ -141,7 +142,7 @@ export class WorkerContext {
         };
     
         ////////////////////////////    ///////////////////////////////////
-        app.post('/login', Wrapper(require('../procedure/login').Exec));
+        //app.post('/login', Wrapper(require('../procedure/login').Exec));
         app.get('/elb_heart_beat', function (req: Request, res: Response, next: NextFunction) {
             res.status(200).send("ok");
         });
