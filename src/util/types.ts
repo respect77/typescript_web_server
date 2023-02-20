@@ -11,3 +11,10 @@ export enum Master2WorkerEnum {
 export enum Worker2MasterEnum {
     WorkerCreateDone = 1,
 }
+
+export enum AccountSocialTypeEnum {
+    Guest = 1,
+    Google = 2,
+    Apple = 3,
+    Facebook = 4,
+}

@@ -4,6 +4,7 @@ import { MySqlModule } from '../util/mysql_modules';
 import * as utils from '../util/utils';
 import { Master2WorkerEnum, ServerConfig, Worker2MasterEnum } from '../util/types';
 import { MongodbModule } from '../util/mongodb_modules';
+import { LoginProc } from '../procedure/login';
 
 export class WorkerContext {
     private static instance: WorkerContext;
@@ -129,10 +130,10 @@ export class WorkerContext {
     }
 
     RequestMapping(app: Express) {
-        var Wrapper = function (func: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
-            return async function (req: Request, res: Response, next: NextFunction) {
+        var Wrapper = function (func: (req: Request, res: Response) => Promise<void>) {
+            return async function (req: Request, res: Response) {
                 try {
-                    await func(req, res, next);
+                    await func(req, res);
                 }
                 catch (error) {
                     console.log(`Wrapper error`);
@@ -142,7 +143,8 @@ export class WorkerContext {
         };
     
         ////////////////////////////    ///////////////////////////////////
-        //app.post('/login', Wrapper(require('../procedure/login').Exec));
+        app.post('/login', Wrapper(LoginProc));
+        
         app.get('/elb_heart_beat', function (req: Request, res: Response, next: NextFunction) {
             res.status(200).send("ok");
         });
