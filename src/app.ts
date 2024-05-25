@@ -33,15 +33,16 @@ async function Start() {
 
         let config = require(args[2]) as ServerConfig;
 
-        //master의 인자를 worker에 넘긴다.
-        cluster.setupPrimary({ exec: args[1], args: [args[2]] });
-
         const master_context = MasterContext.getInstance();
 
         let init_info = await master_context.Init(config);
+        init_info = JSON.stringify({ a: 1});
+
+        //master의 인자를 worker에 넘긴다.
+        cluster.setupPrimary({ exec: args[1], args: [args[2]] });
 
         for (let i = 0; i < os.cpus().length; ++i) {
-            let worker = cluster.fork(init_info);
+            let worker = cluster.fork({init_info});
             master_context.AddWorker(worker);
         }
     }

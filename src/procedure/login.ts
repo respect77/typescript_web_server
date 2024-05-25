@@ -3,8 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { AccountSocialTypeEnum } from '../util/types';
 import { RequestGetJson } from '../util/utils';
 export async function LoginProc(req: Request, res: Response) {
-    var social_type = req.body["social_type"];
-    var access_token = req.body["access_token"];
+    let social_type = req.body["social_type"];
+    let access_token = req.body["access_token"];
 
     try {
         switch (social_type) {

@@ -1,7 +1,23 @@
 
-export interface ServerConfig {
+import { RowDataPacket } from "mysql2/promise";
+
+export interface ServerDBConfig {
+    connectionLimit: number;
+    host: string;
     port: number;
-    game_db: string
+    database: string;
+    user: string;
+    datpasswordabase: string;
+}
+
+export interface ServerConfig {
+    service_type: string;
+    port: number;
+    account_db: ServerDBConfig;
+}
+
+
+export interface WorkerInitData {
 }
 
 export enum Master2WorkerEnum {
@@ -17,4 +33,18 @@ export enum AccountSocialTypeEnum {
     Google = 2,
     Apple = 3,
     Facebook = 4,
+}
+
+
+
+////////////////////////////////////////////////////////////////
+export interface UserIndexResult extends RowDataPacket {
+    user_index: number;
+}
+
+export interface SocialTypeResult extends RowDataPacket {
+    account_type: number;
+}
+
+export interface AccountResult extends UserIndexResult, SocialTypeResult {
 }

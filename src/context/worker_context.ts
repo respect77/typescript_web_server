@@ -1,5 +1,6 @@
 'use strict';
 import express, { Express, Request, Response, NextFunction } from 'express';
+import { createClient } from 'redis';
 import { MySqlModule } from '../util/mysql_modules';
 import * as utils from '../util/utils';
 import { Master2WorkerEnum, ServerConfig, Worker2MasterEnum } from '../util/types';
@@ -11,19 +12,16 @@ export class WorkerContext {
     config!: ServerConfig;
     
     account_db: MySqlModule;
-    game_db: MongodbModule;
+    //game_db: MongodbModule;
 
     master_message_func_map: Map<Master2WorkerEnum, (msg: any) => any>;
 
     private constructor() {
         let self = this;
         this.account_db = new MySqlModule();
-        this.game_db = new MongodbModule();
+        //this.game_db = new MongodbModule();
         this.master_message_func_map = new Map<Master2WorkerEnum, (msg: any) => any>();
-        this.master_message_func_map.set(Master2WorkerEnum.Init, (msg: any) => {
-            self.StartServer();
-        });
-
+        
         process.on("message", (data: any) => {
             if (data === undefined) {
                 console.log("process.on : data == undefined");
@@ -55,9 +53,9 @@ export class WorkerContext {
 
         try {
             //todo all game_db connect
-            let game_db_connect_result = await this.game_db.Connect(config.game_db);
-            if(game_db_connect_result === false) {
-                console.log(`game_db_connect_result === false`);
+            let account_db_connect_result = await this.account_db.Connect(config.account_db);
+            if(account_db_connect_result === false) {
+                console.log(`account_db_connect_result === false`);
                 process.exit(0);
             }
         }
@@ -66,7 +64,8 @@ export class WorkerContext {
             process.exit(0);
         }
 
-        this.MessageToMaster(Worker2MasterEnum.WorkerCreateDone, '');
+        //this.MessageToMaster(Worker2MasterEnum.WorkerCreateDone, '');
+        this.ListenServer()
     }
 
     static getInstance() {
@@ -83,18 +82,35 @@ export class WorkerContext {
         process.send({ type, value });
     }
 
-    async StartServer() {
+    async ListenServer() {
         let self = this;
         var app = express();
     
         var body_parser = require('body-parser');
-        //var session = require('express-session');
-        //const MongoStore = require('connect-mongo')(session);
+        
+        var session = require('express-session');
+        let RedisStore = require('connect-redis');
+
+        const redis_client = await createClient({url: 'localhost:6379'})
+            .on('error', err => console.log('Redis Client Error', err))
+            .connect();
     
         app.use(body_parser.json({ limit: '3mb' }));
         app.use(body_parser.urlencoded({ limit: '3mb', extended: true }));
     
         //app.use(SessionBefore);
+
+        const SECRET_KEY = 'it is a good day to die';
+        app.use(session({
+            secret: SECRET_KEY,
+            saveUninitialized: false, // don't create session until something stored
+            resave: false, //don't save session if unmodified
+
+            store: new RedisStore({
+                client: redis_client,
+                prefix: "myapp:",
+              })
+        }));
     
     
         app.use(ConnectStart);

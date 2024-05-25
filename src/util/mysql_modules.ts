@@ -2,23 +2,13 @@
 import * as mysql from "mysql2/promise";
 import { EventEmitter } from "events";
 import * as utils from '../util/utils';
-export class QueryResult {
-    constructor(public result: Array<any>, public error:any = undefined) {}
+
+export class QueryResult<T extends mysql.RowDataPacket> {
+    constructor(public results: Array<T>, public error:any = undefined) {}
 }
 
-function ErrorReturn(error: any) {
-    return new QueryResult([], error);
-}
-
-function Return(result: Array<any>) {
-    if(Array.isArray(result) === false) {
-        return ErrorReturn(`Array.isArray(result) === false`);
-    }
-    if(result.length === 1 && result[0]["error_code"] !== undefined) {
-        return ErrorReturn(`error_code:${result[0]["error_code"]}`);
-    }
-
-    return new QueryResult(result);
+export class ExecResult {
+    constructor(public result: mysql.ResultSetHeader | undefined, public error:any = undefined) {}
 }
 
 export class MySqlModule extends EventEmitter {
@@ -44,12 +34,13 @@ export class MySqlModule extends EventEmitter {
             catch (error) {
                 await this.Connect(this.config);
             }
-            await utils.Sleep(5 * 1000);
+            finally {
+                await utils.Sleep(5 * 1000);
+            }
         }
     }
 
     async Connect(config: any) {
-        var self = this;
         this.config = config;
         this.connect_pool = mysql.createPool(config);
 
@@ -65,31 +56,29 @@ export class MySqlModule extends EventEmitter {
         return true;
     }
 
-    async QueryPromise(query: string, values: Array<any> = []) {
+    async QueryPromise<T extends mysql.RowDataPacket>(query: string, params: Array<any> = []) : Promise<QueryResult<T>>{
         try {
-            const [rows, fields] = await this.connect_pool.query<Array<any>>(query, values);
-            return new QueryResult(rows);
+            const [results] = await this.connect_pool.execute<Array<T>>(query, params);
+            return new QueryResult(results);
         }
         catch (error) {
-            return ErrorReturn(error);
+            return new QueryResult(new Array<T>, error);
         }
     }
 
-    async ProcedurePromise(procedure: string, params: Array<any>) {
+    async ExecPromise(query: string, params: Array<any> = []): Promise<ExecResult> {
         try {
-            const [rows, fields] = await this.connect_pool.query<Array<any>>(procedure, params);
-            return Return(rows[0]);
+            const [result] = await this.connect_pool.execute<mysql.ResultSetHeader>(query, params);
+            return new ExecResult(result);
         }
         catch (error) {
-            return ErrorReturn(error);
+            return new ExecResult(undefined, error);
         }
     }
 
     async MultiQueryPromise(query_array: Array<string>) {
-        var self = this;
-
         try {
-            var connection = await self.connect_pool.getConnection();
+            var connection = await this.connect_pool.getConnection();
         }
         catch (error) {
             return error;
